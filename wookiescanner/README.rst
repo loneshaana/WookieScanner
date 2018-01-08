@@ -20,7 +20,7 @@ Then run the following commands to bootstrap your environment.
 
 ::
 
-    git clone https://github.com/None/wookiescanner
+    git clone https://github.com/loneshaana/WookieScanner
     cd wookiescanner
     pip install -r requirements/dev.txt
     python manage.py server
