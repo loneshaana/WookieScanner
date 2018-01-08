@@ -1,0 +1,207 @@
+
+{% extends "layout.html" %}
+{% block content %}
+<style type="text/css">
+  .btn-file {
+    position: relative;
+    overflow: hidden;
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+</style>
+<h1>Welcome to Wookie Scanner</h1>
+<p>This is a Software Vulnerability Scanner. It scans software Libraries for any weaknesses.
+    It includes Bootstrap 3, jQuery 2, Flask-SQLAlchemy, WTForms, and various testing utilities out of the box.</p>
+    <p>Acknowledgements
+      <li>Python Cookiecutter Team</li>
+    
+  </p>
+<!-- Main jumbotron for a primary marketing message or call to action
+<div style="background:transparent !important" class="jumbotron" >
+
+  
+
+  <p>This is a Software Vulnerability Scanner. It scans software Libraries for any weaknesses.
+    It includes Bootstrap 3, jQuery 2, Flask-SQLAlchemy, WTForms, and various testing utilities out of the box.</p>
+    <p>Acknowledgements
+      <li>Python Cookiecutter Team</li>
+      <li>This template was created by Steven Loria, and modified by Will McGinnis for use with the cookiecutter package by Audrey Roy.</li>
+  </p>
+
+  <p><a href="https://github.com/wdm0006/cookiecutter-flask" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
+</div><!-- /.jumbotron -->
+<hr>
+<table class="table">
+  <label id="error"></label>
+  <thead>
+    <tr>
+      <th>
+          <div class="form-group">
+
+          <div class="input-group input-file">
+            <span class="input-group-btn">
+                <button class="btn btn-default btn-choose" type="button">Choose</button>
+            </span>
+            <input type="text" class="form-control" placeholder='  Choose files...' disabled="false" />
+          </div>
+
+            <div class="form-group ">
+               <button type="submit" class="btn btn-primary pull-right" onclick="checkModules()">Submit</button>
+            </div>
+
+          <form id ="myform" method="POST" action="/receive">
+          </form>
+  </div>
+  </th>
+      <th>
+        <div>
+
+            <form id ="single_module" method="POST" action="/process" class="navbar-form form-inline">
+                 <input class="form-control" type="text" name="module" id="module" style="width: 34%" placeholder="Search">
+            <i class="fa fa-info-circle" aria-hidden="true" id="tooltip" onmouseover="tooltip()">
+              <!-- TODO add tooltip here -->
+            </i>
+            </form>
+                <button class="btn btn-primary" onclick="processModule()">Scan</button>
+        </div>
+      </th>
+    </tr>
+  </thead>
+</table>
+
+{%- if summary -%}
+  {%- set module_list = ",".join(summary.keys()) -%}
+<div class="container">
+    <h2><i class="fa fa-check-square-o"> </i> Modules with Vulnerabilities</i></h2>
+    <p>This table contains the List of Vulnerabilities of The Modules </p>
+
+<!-- ____________________________________________PAGINATION_________________________________________________________ -->
+  
+    {%- if pages -%}
+<div class="pager form-control" >
+  
+      <form id='previous' action="/process_previous" method="POST">
+        <input type="text" id="previousmod" name="previous" hidden="true" value="{{module_list}}">
+      </form>
+
+        <a class="pull-left"><button style="border:0px" onclick="getPrevious()">&larr; Previous</button></a>
+
+     <form id='next' action="/process_next" method="POST">
+       <input type="text" id="nextmod" name="next" hidden="true" value="{{module_list}}">
+     </form>
+      <a class="pull-right"><button style="border:0px" onclick="getNext()">&rarr; Next</button></a>
+</div>
+
+      {%- endif -%}
+<!-- ____________________________________________END OF PAGINATION_________________________________________________________ -->
+
+
+<!-- ____________________________________________FILTER_________________________________________________________ -->
+<div class="pull-right text-primary">
+    <!-- <i class="fa fa-filter text-primary" aria-hidden="true"></i> -->
+  <form id="filterFORM" action="/filter" method="POST" class="fa fa-filter">
+      <select id="filter" name="filter" class="form-group">
+        <option selected="selected">Filter By</option>
+        <option value="date_published">Published</option>
+        <option value="cveid">cveid</option>
+        <option value="date_modified">Modified</option>
+        <option value="cvss_base">Cvss Base</option>
+
+      </select>
+      <input type="text" name="modules" value="{{module_list}}" hidden="true">
+</form>
+  </div>
+<!-- ____________________________________________END OF FILTER_________________________________________________________ -->
+
+    {%- for module_name in summary.keys() -%}  
+    <div id="{{module_name}}">    
+    <table class="table" >
+
+                <thead>
+                  <tr>
+                    <th>{{module_name}}</th>
+                    <th>Vulnerability Id</th>
+                    <th>Date Published</th>
+                    <th>Date Modified</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                
+      {%- for data in summary[module_name] -%}
+            {%- if data|length -%}
+                                <tbody>
+                                  <tr>
+                                    <td></td>
+                                    <td>{{data[0]}}</td>
+                                    <td>{{data[1].split('T')[0] }}</td>
+                                    <td>{{data[2].split('T')[0] }}</td>
+                                    <td>{{data[3]}}</td>
+                                  </tr>
+                                </tbody>
+            {%- else -%}
+            <tbody>
+            <tr>
+              <td>No Data Found</td>
+            </tr>
+            </tbody>
+            {%- endif -%}
+      {%- endfor -%}
+  </div>  
+    </table>
+  
+    {%- endfor -%}
+
+
+    {%- if pages -%}
+<div class="pager form-control" >
+  
+      <form id='previous' action="/process_previous" method="POST">
+        <input type="text" id="previousmod" name="previous" hidden="true" value="{{module_list}}">
+      </form>
+
+        <a class="pull-left"><button style="border:0px" onclick="getPrevious()">&larr; Previous</button></a>
+
+     <form id='next' action="/process_next" method="POST">
+       <input type="text" id="nextmod" name="next" hidden="true" value="{{module_list}}">
+     </form>
+      <a class="pull-right"><button style="border:0px" onclick="getNext()">&rarr; Next</button></a>
+</div>
+
+      {%- endif -%}
+
+  </div>
+{%- endif -%}
+<div class="body-content">
+  <div class="row">
+    <div class="col-lg-4">
+      <h2><i class="fa fa-code"></i> CVE </h2>
+      <p>Database Containing list and description of known vulnerabilties in software.</p>
+      <p><a class="btn btn-default" href="https://cve.mitre.org/index.html">Official website &raquo;</a></p>
+    </div>
+    <div class="col-lg-4">
+      <h2><i class="fa fa-laptop"></i> CAPEC</h2>
+      <p>CAPEC™ is a comprehensive dictionary and classification taxonomy of known attacks that can be used by analysts, developers, testers, and educators to advance community understanding and enhance defenses.</p>
+      <p><a href="http://www.sqlalchemy.org/" class="btn btn-default" href="#">Official website &raquo;</a></p>
+   </div>
+    <div class="col-lg-4">
+      <h2><i class="fa fa-edit"></i> OVAL</h2>
+      <p>OVAL is an information security community effort to standardize how to assess and report upon the machine state of computer systems. OVAL includes a language to encode system details, and an assortment of content repositories held throughout the community.</p>
+      <p><a href="http://wtforms.simplecodes.com/" class="btn btn-default" href="#">Official website &raquo;</a></p>
+    </div>
+  </div><!-- /.row -->
+</div>
+{% endblock %}
+
