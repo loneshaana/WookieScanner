@@ -81,7 +81,6 @@ For a full migration command reference, run ``python manage.py db --help``.
 
 Running Server
 --------------
-::
     To run the server type the below command inside the wookie scanner directory
     ::
     python manage.py server
