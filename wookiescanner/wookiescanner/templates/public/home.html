@@ -27,12 +27,12 @@
     It includes Bootstrap 3, jQuery 2, Flask-SQLAlchemy, WTForms, and various testing utilities out of the box.</p>
     <p>Acknowledgements
       <li>Python Cookiecutter Team</li>
-    
+
   </p>
 <!-- Main jumbotron for a primary marketing message or call to action
 <div style="background:transparent !important" class="jumbotron" >
 
-  
+
 
   <p>This is a Software Vulnerability Scanner. It scans software Libraries for any weaknesses.
     It includes Bootstrap 3, jQuery 2, Flask-SQLAlchemy, WTForms, and various testing utilities out of the box.</p>
@@ -51,16 +51,16 @@
       <th>
           <div class="form-group">
 
-          <div class="input-group input-file">
+          <!-- <div class="input-group input-file">
             <span class="input-group-btn">
                 <button class="btn btn-default btn-choose" type="button">Choose</button>
             </span>
             <input type="text" class="form-control" placeholder='  Choose files...' disabled="false" />
-          </div>
-
-            <div class="form-group ">
-               <button type="submit" class="btn btn-primary pull-right" onclick="checkModules()">Submit</button>
-            </div>
+          </div> -->
+          <input type="file" multiple id="code_files" name="data">
+            <!-- <div class="form-group"> -->
+               <button class="btn btn-primary pull-right" id="scanFile">Submit</button>
+            <!-- </div> -->
 
           <form id ="myform" method="POST" action="/receive">
           </form>
@@ -69,30 +69,30 @@
       <th>
         <div>
 
-            <form id ="single_module" method="POST" action="/process" class="navbar-form form-inline">
+            <form id ="single_module" method="POST" class="navbar-form form-inline">
                  <input class="form-control" type="text" name="module" id="module" style="width: 34%" placeholder="Search">
             <i class="fa fa-info-circle" aria-hidden="true" id="tooltip" onmouseover="tooltip()">
               <!-- TODO add tooltip here -->
             </i>
             </form>
-                <button class="btn btn-primary" onclick="processModule()">Scan</button>
+                <button class="btn btn-primary" id="scanModule">Scan</button>
         </div>
       </th>
     </tr>
   </thead>
 </table>
 
-{%- if summary -%}
-  {%- set module_list = ",".join(summary.keys()) -%}
+{%- if __summary__ -%}
+{%- set module_list = ",".join(__summary__.keys()) -%}
 <div class="container">
     <h2><i class="fa fa-check-square-o"> </i> Modules with Vulnerabilities</i></h2>
     <p>This table contains the List of Vulnerabilities of The Modules </p>
 
 <!-- ____________________________________________PAGINATION_________________________________________________________ -->
-  
+
     {%- if pages -%}
 <div class="pager form-control" >
-  
+
       <form id='previous' action="/process_previous" method="POST">
         <input type="text" id="previousmod" name="previous" hidden="true" value="{{module_list}}">
       </form>
@@ -126,8 +126,8 @@
   </div>
 <!-- ____________________________________________END OF FILTER_________________________________________________________ -->
 
-    {%- for module_name in summary.keys() -%}  
-    <div id="{{module_name}}">    
+    {%- for module_name in __summary__.keys() -%}
+    <div id="{{module_name}}">
     <table class="table" >
 
                 <thead>
@@ -139,8 +139,8 @@
                     <th>Description</th>
                   </tr>
                 </thead>
-                
-      {%- for data in summary[module_name] -%}
+
+      {%- for data in __summary__[module_name] -%}
             {%- if data|length -%}
                                 <tbody>
                                   <tr>
@@ -159,15 +159,15 @@
             </tbody>
             {%- endif -%}
       {%- endfor -%}
-  </div>  
+  </div>
     </table>
-  
+
     {%- endfor -%}
 
 
     {%- if pages -%}
 <div class="pager form-control" >
-  
+
       <form id='previous' action="/process_previous" method="POST">
         <input type="text" id="previousmod" name="previous" hidden="true" value="{{module_list}}">
       </form>
@@ -204,4 +204,3 @@
   </div><!-- /.row -->
 </div>
 {% endblock %}
-

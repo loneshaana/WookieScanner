@@ -6,12 +6,13 @@ class Database:
 				self.filename = filename
 			else:
 				return None
-		except:
+		except Exception:
 			return None
 
 	def Establish_connection(self):
 		try:
-			conn = sqlite3.connect(self.filename)
+			with open(self.filename,'r') as dbfile:
+				conn = sqlite3.connect(dbfile)
 			return conn
-		except:
+		except Exception:
 			return None

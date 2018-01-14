@@ -94,32 +94,22 @@ def sitemap():
     return response
 
 
-@blueprint.route('/receive',methods=['POST'])
+@blueprint.route('/receive',methods=['POST','GET'])
 def response():
     __summary__ = {}
     __cveid__ = {}
     __pages__ =False
     if request.method =="POST":
-        # modules = request.args.get('data')
-        __modules__  = request.form['data']
-        # if  modules found in the user file
-        excludes = exc_py.python_excludes()
+        __modules__  = request.form['data'].split(',')
         if __modules__ is not None:
-            # connect to the databases
-            __mod_list__ = __modules__.split(",")
-            __mod_list__.pop()
-
             db=Database("database/vfeed.db")
             __conn__ = db.Establish_connection()
-            __new_modules__=[]
             if __conn__:                                                    # Got a database connection
-                for item in __mod_list__ :                                  # check every module in module list
-                    if item is not None and item not in excludes:           # if module in not none and module is not in excludes list then proceed
+                for item in __modules__:                                  # check every module in module list
+                    if item is not None:                                    # and item not in excludes:
                         __summary__[item] =[]                               # save this module to the summary dictionary with empty list
                         __cveid__[item] =[]
-                        __new_modules__.append(item)
-
-                for item in __new_modules__:
+                for item in __modules__:
                     if(item != ""):
                         total_rows_query = "select count(*) from nvd_db where summary like '%{0}%'".format(item)
                         cur = __conn__.execute(total_rows_query)
@@ -133,21 +123,22 @@ def response():
                         rows = cur.fetchall()
                         if rows:
                             for row in rows:
-                              __summary__[item].append([row[0],row[1],row[2],row[3]])
-                            # save the data into the summary dictionary
-                        else:
-                            del __summary__[item]
+                              __summary__[item].append(row)
                 __conn__.close()
-                return render_template('public/home.html',summary=__summary__,pages=__pages__,error=0)
+                return render_template('public/home.html',__summary__=__summary__,pages=__pages__,error=0)
             else:
-                return render_template('500.html',error="Error connecting Database",summary=0)
+                flash("Error connecting database","success")
+                return redirect(url_for('public.home'))
         else:
             return render_template("401.html",error="No modules found" ,summary=0)
-    else:
-        return render_template('500.html',error ="Get method not supported",summary=0)
+    flash("Get Method not supported","success")
+    # else:
+    return redirect(url_for('public.home'))
+
+    # return render_template('500.html',error ="Get method not supported",summary=0)
 
 
-@blueprint.route('/process',methods=['POST'])
+@blueprint.route('/process',methods=['POST','GET'])
 def process():
     if request.method == "POST":
         module = request.form['module']
@@ -165,21 +156,27 @@ def process():
                 total_pages = total_rows[0] // 10
                 if(total_pages > 10):
                     __pages__=True
-              
+
                 query = "select cveid,date_published,date_modified,summary from nvd_db where {0} like '%{1}%' limit 0,10".format(check,module)
-                
+
                 cur = __conn__.execute(query)
                 rows = cur.fetchall()
                 __conn__.close()
                 for row in rows:
                     __summary__[module].append(row)
-                return render_template("public/home.html",summary=__summary__,error=0,pages=__pages__)
+                return render_template("public/home.html",__summary__=__summary__,error=0,pages=__pages__)
             else:
-                return render_template("500.html",summary=0,error="Database Error")
+                flash("Database Error","success");
+                return redirect(url_for('public.home'));
+                # return render_template("500.html",summary=0,error="Database Error")
         else:
-            return render_template("401.html",summary=0,error="No Vulnerability found")
+            flash("No Vulnerability found","success")
+            return redirect(url_for('public.home'))
+            # return render_template("401.html",summary=0,error="No Vulnerability found")
     else:
-        return render_template("401.html",summary=0,error="Get method not supported")
+        flash("GET method not supported")
+        return redirect(url_for('public.home'))
+        # return render_template("401.html",summary=0,error="Get method not supported")
 
 
 # ------------------------------------this route is unused-----------------------------------
@@ -244,7 +241,7 @@ def process_next():
                         for row in rows:
                             __summary__[item].append([row[0],row[1],row[2],row[3]])
                 __conn__.close()
-                return render_template('public/home.html',summary=__summary__,error=0,pages=__pages__)
+                return render_template('public/home.html',__summary__ = __summary__,error=0,pages=__pages__)
             else:
                 return render_template('500.html',error="Error connecting Database",summary=0)
         else:
@@ -288,7 +285,7 @@ def process_previous():
                         for row in rows:
                             __summary__[item].append([row[0],row[1],row[2],row[3]])
                 __conn__.close()
-                return render_template('public/home.html',summary=__summary__,pages=__pages__,error=0)
+                return render_template('public/home.html',__summary__ = __summary__,pages=__pages__,error=0)
             else:
                 return render_template('500.html',error="Error connecting Database",summary=0)
         else:
@@ -320,6 +317,5 @@ def filter():
                     for row in rows:
                         __summary__[item].append(row)
             __conn__.close()
-            return render_template('public/home.html',summary=__summary__,error=0)
+            return render_template('public/home.html',__summary__ = __summary__,error=0)
         return render_template('public/test.html',filter=__filterBY__,modules =__modules__)
-
